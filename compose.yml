@@ -1,0 +1,92 @@
+---
+services:
+  jellyseerr:
+    image:  ghcr.io/fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    networks:
+      media_net:
+
+    environment:
+      - TZ=Etc/UTC
+      - PORT=5055
+      - AUTH_METHOD=local
+    volumes:
+      - ./config/jellyseerr:/app/config
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+  deluge:
+    image: lscr.io/linuxserver/deluge:latest
+    container_name: deluge
+    networks:
+      media_net:
+
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - DELUGE_LOGLEVEL=info #optional
+    volumes:
+      - ./config/deluge:/config
+      - /mnt/d/shared/:/shared
+    ports:
+      - 8112:8112
+      - 6881:6881
+      - 6881:6881/udp
+      - 58846:58846 #optional
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    networks:
+      media_net:
+
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./config/radarr:/config
+      - /mnt/d/shared/:/shared
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    #image: lscr.io/linuxserver/radarr:version-5.2.6.8373-ls176
+    container_name: sonarr
+    networks:
+      media_net:
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./config/sonarr:/config
+      - /mnt/d/shared:/shared
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    networks:
+      media_net:
+
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - ./config/prowlarr:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+
+networks:
+  media_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
